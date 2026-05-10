@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wabby Animatix Pro — Animation Studio</title>
+    <meta name="description" content="Wabby Animatix Pro 2 - Software de animación 2D con herramientas de dibujo, timeline, onion skinning y más.">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0a0a0a;
+            --bg-card: #141414;
+            --bg-card-hover: #1a1a1a;
+            --border: #222;
+            --text: #e8e8e8;
+            --text-dim: #888;
+            --accent: #00b341;
+            --accent-glow: #00e652;
+            --accent-dark: #008f34;
+            --purple: #8b5cf6;
+            --yellow: #e6a817;
+            --red: #e74c3c;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10,10,10,0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span { color: var(--accent); }
+
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+
+        .nav-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--text); }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 6rem 2rem 4rem;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0,179,65,0.12) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 2rem;
+            background: var(--bg-card);
+        }
+
+        .badge span { color: var(--accent); font-weight: 600; }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 7vw, 5rem);
+            font-weight: 900;
+            letter-spacing: -2px;
+            line-height: 1.05;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 .gradient {
+            background: linear-gradient(135deg, var(--accent), var(--accent-glow), #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-dim);
+            max-width: 560px;
+            margin-bottom: 2.5rem;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.85rem 1.8rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-glow);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,179,65,0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-card-hover);
+            border-color: #444;
+        }
+
+        .preview {
+            max-width: 1100px;
+            margin: -2rem auto 0;
+            padding: 0 2rem;
+        }
+
+        .preview-window {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .preview-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: #111;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .preview-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #333;
+        }
+
+        .preview-dot:nth-child(1) { background: #ff5f57; }
+        .preview-dot:nth-child(2) { background: #febc2e; }
+        .preview-dot:nth-child(3) { background: #28c840; }
+
+        .preview-body { padding: 0; min-height: 300px; }
+        .preview-body img { width: 100%; display: block; max-height: 600px; object-fit: contain; background: #0d0d0d; }
+
+        .section-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 1rem;
+        }
+
+        .section-desc {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin-bottom: 3rem;
+        }
+
+        .features, .status, .tech, .donate {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.8rem;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: #333;
+            background: var(--bg-card-hover);
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            width: 44px;
+            height: 44px;
+            background: rgba(0,179,65,0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-card p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* STATUS SECTION */
+        .status-columns {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .status-column {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .status-column h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-column.done h3 { color: var(--accent); }
+        .status-column.wip h3 { color: var(--yellow); }
+
+        .status-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .status-item:last-child { border-bottom: none; }
+
+        .status-check {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            margin-top: 2px;
+        }
+
+        .status-column.done .status-check {
+            background: rgba(0,179,65,0.15);
+            color: var(--accent);
+        }
+
+        .status-column.wip .status-check {
+            background: rgba(230,168,23,0.15);
+            color: var(--yellow);
+        }
+
+        .status-item-text strong {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .status-item-text span {
+            color: var(--text-dim);
+            font-size: 0.8rem;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .tech-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.2rem;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .tech-item:hover { border-color: var(--accent); }
+
+        .tech-item .tech-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .tech-item .tech-desc {
+            color: var(--text-dim);
+            font-size: 0.8rem;
+        }
+
+        .cta {
+            text-align: center;
+            padding: 6rem 2rem;
+            position: relative;
+        }
+
+        .cta::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(0,179,65,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .cta h2 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 900;
+            letter-spacing: -1px;
+            margin-bottom: 1rem;
+        }
+
+        .cta p {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .donate { text-align: center; }
+
+        .donate-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .donate-card {
+            display: block;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem 1.5rem;
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.3s;
+        }
+
+        .donate-card:hover {
+            border-color: var(--accent);
+            background: var(--bg-card-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,179,65,0.1);
+        }
+
+        .donate-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.2rem;
+        }
+
+        .donate-paypal { background: rgba(0,112,184,0.15); color: #0070ba; }
+        .donate-mp { background: rgba(0,179,65,0.15); color: #00b341; }
+        .donate-bank { background: rgba(139,92,246,0.15); color: #8b5cf6; }
+
+        .donate-card h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+
+        .donate-card p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .donate-link {
+            color: var(--accent);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .donate-card:hover .donate-link { color: var(--accent-glow); }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero-buttons { flex-direction: column; align-items: center; }
+            .status-columns { grid-template-columns: 1fr; }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate { animation: fadeUp 0.7s ease forwards; }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">Wabby <span>Animatix</span> Pro</div>
+        <ul class="nav-links">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#status">Estado</a></li>
+            <li><a href="#tech">Stack</a></li>
+            <li><a href="#donate">Donar</a></li>
+            <li><a href="#download">Descargar</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero">
+        <div class="badge animate">Versión <span>2.0</span> disponible</div>
+        <h1 class="animate delay-1">
+            Animación 2D<br><span class="gradient">sin complicaciones</span>
+        </h1>
+        <p class="animate delay-2">
+            Herramientas de dibujo, timeline, onion skinning y rotoscopia. Todo en una app liviana y potente.
+        </p>
+        <div class="hero-buttons animate delay-3">
+            <a href="#download" class="btn btn-primary">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Descargar
+            </a>
+            <a href="#status" class="btn btn-secondary">Ver estado</a>
+        </div>
+    </section>
+
+    <div class="preview animate delay-3">
+        <div class="preview-window">
+            <div class="preview-bar">
+                <div class="preview-dot"></div>
+                <div class="preview-dot"></div>
+                <div class="preview-dot"></div>
+            </div>
+            <div class="preview-body">
+                <img src="screenshot.png" alt="Wabby Animatix Pro">
+            </div>
+        </div>
+    </div>
+
+    <section class="features" id="features">
+        <div class="section-label">Features</div>
+        <h2 class="section-title">Todo lo que necesitás para animar</h2>
+        <p class="section-desc">Al hueso y sin complejidades.</p>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">✏️</div>
+                <h3>Dibujo con presión</h3>
+                <p>Lápiz y pincel con estabilizador Catmull-Rom. Soporte para tabletas Wacom.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎬</div>
+                <h3>Timeline</h3>
+                <p>Timeline visual con drag & drop, clonado de frames y modos de reproducción.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">👁️</div>
+                <h3>Onion Skinning</h3>
+                <p>Frames anteriores y siguientes con colores configurables. Pasado, futuro o ambos.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎞️</div>
+                <h3>Rotoscopia</h3>
+                <p>Importá video como referencia con opacidad ajustable. Navegá frame a frame.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🧰</div>
+                <h3>+20 herramientas</h3>
+                <p>Lazo, selección, relleno, formas, texto, difuminado, aerógrafo y más. Importá brushes .ABR.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3>Color Wheel</h3>
+                <p>Selector de color integrado con control de opacidad del pincel.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="status" id="status">
+        <div class="section-label">Estado del proyecto</div>
+        <h2 class="section-title">Qué funciona y qué estamos construyendo</h2>
+        <p class="section-desc">Transparencia total. Esto es lo que tiene la app hoy.</p>
+
+        <div class="status-columns">
+            <div class="status-column done">
+                <h3>
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
+                    Funcionando
+                </h3>
+
+                <div class="status-item">
+                    <div class="status-check">✓</div>
+                    <div class="status-item-text">
+                        <strong>Lápiz y Pincel</strong>
+                        <span>Dibujo libre con sensibilidad a presión y estabilizador de trazo</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">✓</div>
+                    <div class="status-item-text">
+                        <strong>Goma de borrar</strong>
+                        <span>Borrado suave con tamaño ajustable</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">✓</div>
+                    <div class="status-item-text">
+                        <strong>Relleno (balde)</strong>
+                        <span>Flood fill con tolerancia configurable</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">✓</div>
+                    <div class="status-item-text">
+                        <strong>Cuentagotas</strong>
+                        <span>Pick de color desde el canvas</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">✓</div>
+                    <div class="status-item-text">
+                        <strong>Línea, Rectángulo, Elipse</strong>
+                        <span>Formas con preview en tiempo real</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">✓</div>
+                    <div class="status-item-text">
+                        <strong>Curva Bézier</strong>
+                        <span>Curvas cúbicas con puntos de control</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">✓</div>
+                    <div class="status-item-text">
+                        <strong>Texto</strong>
+                        <span>Renderizado de texto en el canvas</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">✓</div>
+                    <div class="status-item-text">
+                        <strong>Difuminado y Aerógrafo</strong>
+                        <span>Efectos de blur y spray paint</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">✓</div>
+                    <div class="status-item-text">
+                        <strong>Lazo de relleno</strong>
+                        <span>Freeform, rectángulo y elipse con relleno automático</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">✓</div>
+                    <div class="status-item-text">
+                        <strong>Selección</strong>
+                        <span>Rect, lazo libre, elipse, marquee + mover selección</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">✓</div>
+                    <div class="status-item-text">
+                        <strong>Capas (raster)</strong>
+                        <span>Agregar, eliminar, duplicar, mover, fusionar, opacidad</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">✓</div>
+                    <div class="status-item-text">
+                        <strong>Timeline</strong>
+                        <span>Navegación de frames, play/pause, loop, ping-pong</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">✓</div>
+                    <div class="status-item-text">
+                        <strong>Onion Skinning</strong>
+                        <span>Pasado, futuro, ambos. Colores y opacidad configurables</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">✓</div>
+                    <div class="status-item-text">
+                        <strong>Rotoscopia</strong>
+                        <p>Importar video como referencia con opacidad ajustable</p>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">✓</div>
+                    <div class="status-item-text">
+                        <strong>Importar .ABR</strong>
+                        <span>Brushes de Photoshop convertidos automáticamente</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">✓</div>
+                    <div class="status-item-text">
+                        <strong>Zoom y paneo</strong>
+                        <span>Rueda centrada en cursor, 5% a 800%</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">✓</div>
+                    <div class="status-item-text">
+                        <strong>Deshacer / Rehacer</strong>
+                        <span>Ctrl+Z / Ctrl+Y con stack de 20 estados</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">✓</div>
+                    <div class="status-item-text">
+                        <strong>Exportar video / GIF</strong>
+                        <span>Secuencia de frames a video o animación GIF</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">✓</div>
+                    <div class="status-item-text">
+                        <strong>Atajos personalizables</strong>
+                        <span>Editor de atajos de teclado integrado</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">✓</div>
+                    <div class="status-item-text">
+                        <strong>Binarios compilados</strong>
+                        <span>Descargable para Windows, Linux y macOS sin instalar Python</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-column wip">
+                <h3>
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 1a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0v-4A.5.5 0 0 1 8 1zm0 8a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 9z"/></svg>
+                    En desarrollo
+                </h3>
+
+                <div class="status-item">
+                    <div class="status-check">…</div>
+                    <div class="status-item-text">
+                        <strong>Capas vectoriales (cleanup)</strong>
+                        <span>Trazos vectoriales editables para line art limpio — en implementación</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">…</div>
+                    <div class="status-item-text">
+                        <strong>Auto-trace (bitmap a vector)</strong>
+                        <span>Convertir trazos raster a vectores automáticamente con OpenCV</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">…</div>
+                    <div class="status-item-text">
+                        <strong>Exportar a SVG</strong>
+                        <span>Exportar capas vectoriales como archivos SVG editables</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">…</div>
+                    <div class="status-item-text">
+                        <strong>Edición de nodos</strong>
+                        <span>Mover puntos de ancla y handles de curvas Bézier</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">…</div>
+                    <div class="status-item-text">
+                        <strong>Simetría de dibujo</strong>
+                        <span>Espejo horizontal, vertical y radial mientras dibujás</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">…</div>
+                    <div class="status-item-text">
+                        <strong>Simetría de dibujo</strong>
+                        <span>Espejo horizontal, vertical y radial mientras dibujás</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-check">…</div>
+                    <div class="status-item-text">
+                        <strong>Referencia de imagen estática</strong>
+                        <p>Cargar imagen de referencia fija al lado del canvas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="tech" id="tech">
+        <div class="section-label">Stack</div>
+        <h2 class="section-title">Construido con tecnología sólida</h2>
+        <p class="section-desc">App de escritorio nativa, rápida y sin dependencias pesadas.</p>
+
+        <div class="tech-grid">
+            <div class="tech-item">
+                <div class="tech-name">PySide6</div>
+                <div class="tech-desc">Qt6 bindings</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-name">Pillow</div>
+                <div class="tech-desc">Image processing</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-name">OpenCV</div>
+                <div class="tech-desc">Computer vision</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-name">NumPy</div>
+                <div class="tech-desc">Math ops</div>
+            </div>
+            <div class="tech-item">
+                <div class="tech-name">Python 3.10+</div>
+                <div class="tech-desc">Core language</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta" id="download">
+        <h2>Empezá a animar hoy</h2>
+        <p>Descargá Wabby Animatix Pro 2 y creá animaciones profesionales.</p>
+        <div class="cta-buttons">
+            <a href="#" class="btn btn-primary" id="download-btn">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Descargar para Windows
+            </a>
+        </div>
+    </section>
+
+    <section class="donate" id="donate">
+        <div class="section-label">Apoyá el proyecto</div>
+        <h2 class="section-title">¿Te gusta Wabby Animatix?</h2>
+        <p class="section-desc">Tu donación me ayuda a seguir desarrollando la app.</p>
+
+        <div class="donate-options">
+            <a href="https://paypal.me/TU_USUARIO" class="donate-card" target="_blank">
+                <div class="donate-icon donate-paypal">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797H9.603c-.564 0-1.04.408-1.13.964L7.076 21.337z"/></svg>
+                </div>
+                <h3>PayPal</h3>
+                <p>Doná con tarjeta o cuenta PayPal</p>
+                <span class="donate-link">Ir a PayPal →</span>
+            </a>
+
+            <a href="https://mpago.la/TU_LINK" class="donate-card" target="_blank">
+                <div class="donate-icon donate-mp">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v18H3V3zm16 16V5H5v14h14zM7 7h4v4H7V7zm6 0h4v2h-4V7zm0 4h4v2h-4v-2zM7 13h4v4H7v-4zm6 0h4v4h-4v-4z"/></svg>
+                </div>
+                <h3>Mercado Pago</h3>
+                <p>Transferí desde Argentina</p>
+                <span class="donate-link">Ir a Mercado Pago →</span>
+            </a>
+
+            <div class="donate-card" onclick="copyAlias('josep.joestar')" style="cursor: pointer;">
+                <div class="donate-icon donate-bank">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7v2h20V7L12 2zm0 2.5L18.5 7h-13L12 4.5zM2 21h20v2H2v-2zm2-9h16v1.5H4V12zm0 3h16v1.5H4V15zm2-6h12v1H6V9z"/></svg>
+                </div>
+                <h3>Banco Nación</h3>
+                <p>Alias: <strong style="color: var(--text);">josep.joestar</strong></p>
+                <span class="donate-link" id="copy-msg">Clic para copiar →</span>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2026 Wabby Animatix Pro. Hecho con ❤️ para animadores.</p>
+    </footer>
+
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.feature-card, .tech-item, .status-column').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'all 0.5s ease';
+            observer.observe(el);
+        });
+
+        document.getElementById('download-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('Descarga próximamente — actualizá el link con tu URL real');
+        });
+
+        function copyAlias(alias) {
+            navigator.clipboard.writeText(alias).then(() => {
+                const msg = document.getElementById('copy-msg');
+                msg.textContent = '¡Copiado! ✓';
+                setTimeout(() => { msg.textContent = 'Clic para copiar →'; }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

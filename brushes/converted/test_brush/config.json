@@ -1,0 +1,8 @@
+{
+  "nombre": "Test Brush",
+  "espaciado": 0.25,
+  "tamano_base": 40,
+  "opacidad_flujo": 0.8,
+  "rotacion_dinamica": false,
+  "origen": "test"
+}
